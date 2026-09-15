@@ -1,26 +1,39 @@
 #include <stdio.h>
 #include <string.h>
-#define MAX_LINE 256
-
-/*定义结构体*/
-typedef struct{
-    char code[16];
-    char name[32];
-    int price;
-    int stock;
-} Item;
-
-/*初始化商品信息(待分开写)*/
-
+#include <catalog.h>
+#include <catalog.c>
 
 int main(){
 
-    /*读取用户输入*/
-    char line[MAX_LINE];
-    fgets(line, sizeof(line), stdin);
-    line[strcspn(line, "\r\n")] = '\0';
+    int item_count = 0;
+    int item_sub;
 
-    printf("%s\n", line);
+    while(1)
+    {
+        printf(">");
+
+        /*加载初始商品*/
+        load_items("data/items.csv", &item_count);
+
+        /*读取用户输入*/
+        char line[MAX_LINE];
+        fgets(line, sizeof(line), stdin);
+        line[strcspn(line, "\r\n")] = '\0';
+
+        /*处理输入*/
+        item_sub = compare_code(line);
+        if (item_sub == -1){
+            printf("Error: code not found");
+        }
+        else {
+            printf("%-10s, %d.%02d\n", 
+                   items[item_sub].name,
+                   items[item_sub].price / 100,
+                   items[item_sub].price % 100);
+
+        }
+
+    }
 
     return 0;
 }
