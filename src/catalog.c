@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "catalog.h"
+#include "input.h"
 
 /*初始化物品数组*/
 Item items[MAX_ITEMS];
