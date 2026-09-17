@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <catalog.h>
-#include <catalog.c>
+#include "catalog.h"
 
 int main(){
 
@@ -21,12 +20,13 @@ int main(){
         line[strcspn(line, "\r\n")] = '\0';
 
         /*处理输入*/
-        item_sub = compare_code(line);
+        item_sub = compare_code(line, item_count);
+
         if (item_sub == -1){
-            printf("Error: code not found");
+            printf("Error: code not found\n");
         }
         else {
-            printf("%-10s, %d.%02d\n", 
+            printf("%-10s%d.%02d\n", 
                    items[item_sub].name,
                    items[item_sub].price / 100,
                    items[item_sub].price % 100);
