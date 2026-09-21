@@ -2,6 +2,7 @@
 #include <string.h>
 #include "catalog.h"
 #include "input.h"
+#include "cart.h"
 
 int main(){
 
@@ -16,7 +17,7 @@ int main(){
         printf(">");
 
         /*读取输入*/
-        input(line);
+        input(line, sizeof(line));
 
         /*处理输入*/
         if (handle(line, item_count) == 1 ){
