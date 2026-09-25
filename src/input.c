@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "input.h"
 #include "catalog.h"
 #include "cart.h"
+#include "sales.h"
 
 /*读取用户输入*/
 int input(char *line, int size){
@@ -62,8 +64,114 @@ int output_product_iofo(int item_sub, int cart_item_sub, const char *type){
         
     }
 
+    if (strcmp(type, "sales") == 0){
+
+        printf("Date: %d\n", date_input);
+        printf("No.   Time      Items               Ament\n");
+        printf("-----------------------------------------\n");
+
+        FILE *fp = fopen("data/sales.csv", "r");
+
+        if (fp == NULL){
+            printf("Error: cannot open data/sales.csv\n");
+            return -1;
+        }
+
+        char line[MAX_LINE];
+        if (fgets(line, sizeof(line), fp) == NULL){
+            printf("Error: empty file\n");
+            return -1;
+        }
+
+        char time[9];
+        char name[16];
+        int quantity = 0;
+        int ament = 0;
+        int daily = 0;
+        int judge = -1;     /*检测流水号是否改变*/
+        int receipt_id_current = 1;
+
+        while (fgets(line, sizeof(line), fp) != NULL){
+
+            if (line[0] == '\0'){
+                continue;
+            }
+
+            if ((line[0] - '0') == date_input){
+
+                int i = 0;
+
+                for (char *token = strtok(line, ","); ; token = strtok(NULL, ",")){
+                    
+                    if (i == ROWS){
+                        break;
+                    }
+
+                    /*流水号*/
+                    if (i == 1){
+                        if (receipt_id_current != atoi(token)){
+
+                            printf("%38d.%02d\n", ament / 100, ament % 100);
+
+                            receipt_id_current = atoi(token);
+                            daily = daily + ament;
+                            ament = 0;
+                            judge = -1;
+                        }
+                    }
+                    /*时间*/
+                    if (i == 2){
+                        strcpy(time, token);
+                    }
+
+                    /*名称*/
+                    if (i == 4){
+                        strcpy(name, token);
+                    }
+
+                    /*数量*/
+                    if (i == 6){
+                        quantity = atoi(token);
+                    }
+
+                    /*单种商品总金额*/
+                    if (i == 7){
+                        double price = atof(token);
+                        int cents = (int)(price * 100 + 0.5);
+                        ament = ament + cents;
+                    }
+
+                    i ++;
+                }
+
+                if (judge == -1){
+                    judge = 0;
+                    printf("%d   %s  ", receipt_id_current, time);
+                    printf("  %s x%d\n", name, quantity);
+                }
+                else {
+                    printf("                %s x%d\n", name, quantity);
+                }
+
+            }
+        }
+
+        printf("%38d.%02d\n", ament / 100, ament % 100);
+
+        receipt_id_current = 1;
+        daily = daily + ament;
+        ament = 0;
+        judge = -1;
+
+        printf("-----------------------------------------\n");
+        printf("Daily: %d.%02d\n", daily / 100, daily % 100);
+
+        fclose(fp);
+    }
+
     return 0;
 }
+
 
 /*处理用户输入*/
 int handle(char *line, int item_count){
@@ -80,6 +188,13 @@ int handle(char *line, int item_count){
         /*输入条码*/
         if (strncmp(token, "0", 1) == 0){
             add_cart(buffer, item_count);
+        }
+
+        /*输入sales <date>*/
+        if (strcmp(token, "sales") == 0){
+            token = strtok(NULL, " ");
+            date_input = atoi(token);
+            output_product_iofo(0, 0, "sales");
         }
     }
 
@@ -144,6 +259,13 @@ int handle(char *line, int item_count){
         /*输入checkout*/
         if (strcmp(line, "checkout") == 0){
 
+            /*将销售记录写入sales.csv中*/
+            set_time();
+            sales_record("data/sales.csv");
+            receipt_id ++;
+            
+
+
             /*定义总价*/
             int total = 0;
 
@@ -166,6 +288,18 @@ int handle(char *line, int item_count){
 
         }
 
+        /*输入sales*/
+        if (strcmp(line, "sales") == 0){
+            date_input = date;
+            output_product_iofo(0, 0, "sales");
+        }
+
+        /*输入newday*/
+        if (strcmp(line, "newday") == 0){
+            date ++;
+            printf("Newday start\n");
+            printf("Date: %d", date);
+        }
     }
     
 

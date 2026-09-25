@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "catalog.h"
 #include "input.h"
 #include "cart.h"
+#include "sales.h"
 
 int main(){
 
@@ -11,6 +13,10 @@ int main(){
 
     /*加载初始商品*/
     load_items("data/items.csv", &item_count);
+
+    /*获取当前date*/
+    date = load_max_date(); 
+    printf("Date: %d\n", date);
 
     while(1)
     {
