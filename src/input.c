@@ -5,6 +5,7 @@
 #include "catalog.h"
 #include "cart.h"
 #include "sales.h"
+#include "admin.h"
 
 /*读取用户输入*/
 int input(char *line, int size){
@@ -31,6 +32,17 @@ int output_product_iofo(int item_sub, int cart_item_sub, const char *type){
                items[item_sub].code,
                items[item_sub].price / 100,
                items[item_sub].price % 100
+              );
+
+    }
+
+    if (strcmp(type, "prices_admin") == 0){
+        printf("%-10s%s %d.%02d %d\n",
+               items[item_sub].name,
+               items[item_sub].code,
+               items[item_sub].price / 100,
+               items[item_sub].price % 100,
+               items[item_sub].stock
               );
 
     }
@@ -181,6 +193,7 @@ int handle(char *line, int item_count){
     strcpy(buffer, line);
 
     /*检测输入是否有空格*/
+    /*有空格*/
     if (strchr(line, ' ') != NULL){
 
         char *token = strtok(line, " ");
@@ -196,13 +209,165 @@ int handle(char *line, int item_count){
             date_input = atoi(token);
             output_product_iofo(0, 0, "sales");
         }
+    
+        /*输入setprice <条码> <新价格>*/
+        if (strcmp(token, "setprice") == 0 && admin_status == 0){
+
+            char code[4];
+            int new_price = 0;
+
+            for (int i = 0; i < 2; i ++){
+                token = strtok(NULL, " ");
+                if (i == 0){
+                    strcpy(code, token);
+                }
+
+                if (i == 1){
+                    new_price = (int)(atof(token) * 100 + 0.5);
+                } 
+            }
+
+            setprice(code, new_price, item_count);
+
+            printf("Price updated.");
+        }
+    
+        /*输入itemadd <条码> <名称> <价格>*/
+        if (strcmp(token, "itemadd") == 0 && admin_status == 0){
+            
+            char code[4];
+            char name[16];
+            int price = 0;
+
+            for (int i = 0; i < 3; i ++){
+                token = strtok(NULL, " ");
+
+                if (i == 0){
+                    strcpy(code, token);
+                }
+
+                if (i == 1){
+                    strcpy(name, token);
+                }
+
+                if (i == 2){
+                    price = (int)(atof(token) * 100 + 0.5);
+                }
+            }
+
+            itemadd(code, name, price, item_count);
+
+            printf("%s(%s) added.", name, code);
+        }
+    
+        /*输入itemdel <条码>*/
+        if (strcmp(token, "itemdel") == 0 && admin_status == 0){
+            
+            char name[16];
+            char *code = strtok(NULL, " ");
+
+            for (int i = 0; i < item_count; i ++){
+                    if (strcmp(items[i].code, code) == 0){
+                        strcpy(name, items[i].name);
+                    }
+                }
+
+            if (itemdel(code, item_count) == 0){
+                printf("%s(%s) removed\n", name, code);
+            }
+            else {
+                printf("Error: code %s not found\n", code);
+            }
+        }
+    
+        /*输入restock*/
+        if (strcmp(token, "restock") == 0 && admin_status == 0){
+            
+            char name[16];
+            char code[4];
+            int quantity;
+
+            for (int i = 0; i < 2; i ++){
+                token = strtok(NULL, " ");
+
+                if (i == 0){
+                    strcpy(code, token);
+                }
+
+                if (i == 1){
+                    quantity = atoi(token);
+                }
+            }
+
+            for (int i = 0; i < item_count; i ++){
+                    if (strcmp(items[i].code, code) == 0){
+                        strcpy(name, items[i].name);
+                    }
+                }
+            
+            if (restock(code, quantity, item_count) == 0){
+                printf("%s(%s) add quantity %d\n", name, code, quantity);
+            }
+            else {
+                printf("Error: code %s not found\n", code);
+            }
+        }
+    
+        /*输入setstock*/
+        if (strcmp(token, "setstock") == 0 && admin_status == 0){
+
+            char name[16];
+            char code[4];
+            int quantity;
+
+            for (int i = 0; i < 2; i ++){
+                token = strtok(NULL, " ");
+
+                if (i == 0){
+                    strcpy(code, token);
+                }
+
+                if (i == 1){
+                    quantity = atoi(token);
+                }
+            }
+
+            for (int i = 0; i < item_count; i ++){
+                    if (strcmp(items[i].code, code) == 0){
+                        strcpy(name, items[i].name);
+                    }
+                }
+            
+            if (setstock(code, quantity, item_count) == 0){
+                printf("%s(%s) set quantity %d\n", name, code, quantity);
+            }
+            else {
+                printf("Error: code %s not found\n", code);
+            }
+        }
     }
 
     /*没有空格*/
     else {
+
+        /*admin请求下输入密码*/
+        if (strcmp(line, admin_password) == 0 && admin_request == 0){
+            admin_request = -1;
+            admin_status = 0;
+            printf("Admin mode.\n");
+        }
+        if (strcmp(line, admin_password) != 0 && admin_request == 0 && strcmp(line, "quit") != 0 && strcmp(line, "exit") != 0){
+            printf("Wrong password\n");
+        }
+
         /*输入quit/exit*/
         if (strcmp(line, "quit") == 0 || strcmp(line, "exit") == 0){
-            return handle_exit;
+            if (admin_request == 0){
+                admin_request = -1;
+            }
+            else{
+                return handle_exit;
+            }
         }
 
         /*输入条码*/
@@ -217,7 +382,7 @@ int handle(char *line, int item_count){
         }
 
         /*输入prices*/
-        if (strcmp(line, "prices") == 0){
+        if (strcmp(line, "prices") == 0 && admin_status != 0){
 
             printf("Item      No. Pri.\n");
             printf("------------------\n");
@@ -299,6 +464,28 @@ int handle(char *line, int item_count){
             date ++;
             printf("Newday start\n");
             printf("Date: %d", date);
+        }
+    
+        /*输入admin*/
+        if (strcmp(line, "admin") == 0){
+            admin_request = 0;
+        }
+    
+        /*管理员模式下输入prices*/
+        if (strcmp(line, "prices") == 0 && admin_status == 0){
+            
+            printf("Item      No. Pri. Sto.\n");
+            printf("-----------------------\n");
+
+            for (int i = 0; i < item_count; i ++){
+                output_product_iofo(i, 0, "prices_admin");
+            }
+        }
+    
+        /*输入back*/
+        if (strcmp(line, "back") == 0 && admin_status == 0){
+            admin_status = -1;
+            printf("Bye.\n");
         }
     }
     

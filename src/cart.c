@@ -59,17 +59,24 @@ int add_cart(char *line, const int item_count){
             printf("Error: code %s not found\n", token);
             continue;
         }
-    
-        /*检测购物车中是否已经有该物品*/
-        int i = compare_cart_to_item(item_sub);
-        if (i != -1){
-            cart_items[i].quantity ++;
-            change[i] = 1;
+
+        /*检测库存是否足够*/
+        if (check_stock(token, item_count) == 0){
+
+            /*检测购物车中是否已经有该物品*/
+            int i = compare_cart_to_item(item_sub);
+            if (i != -1){
+                cart_items[i].quantity ++;
+                change[i] = 1;
+            }
+            else {
+                create_item_cart(item_sub, cart_item_sub);
+                change[cart_item_sub] = 1;
+                cart_item_sub ++;
+            }
         }
         else {
-            create_item_cart(item_sub, cart_item_sub);
-            change[cart_item_sub] = 1;
-            cart_item_sub ++;
+            printf("Stockerror: %s", token);
         }
     }
 
@@ -116,4 +123,29 @@ int drop(void){
     cart_item_sub = 0;
     memset(cart_items, 0, sizeof(cart_items));
     return 0;
+}
+
+/*检查库存是否足够*/
+int check_stock(char *code, int item_count){
+
+    for (int i = 0; i < item_count; i ++){
+
+        if (strcmp(code, items[i].code) == 0){
+
+            /*库存充足*/
+            if (items[i].stock != 0){
+                items[i].stock --;
+                return 0;
+            }
+
+            /*库存不足*/
+            if (items[i].stock == 0){
+                return -1;
+            }
+
+        }
+    }
+
+    printf("Error: code %s not found", code);
+    return -1;
 }

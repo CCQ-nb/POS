@@ -5,6 +5,7 @@
 #include "input.h"
 #include "cart.h"
 #include "sales.h"
+#include "admin.h"
 
 int main(){
 
@@ -20,7 +21,11 @@ int main(){
 
     while(1)
     {
+        input_admin();
+
         printf(">");
+
+        input_password();
 
         /*读取输入*/
         input(line, sizeof(line));

@@ -19,5 +19,6 @@ extern int compare_cart_to_item(const int item_sub);
 extern int add_cart(char *line, const int item_count);
 extern int delete_cart(const char *item_code);
 extern int drop(void);
+extern int check_stock(char *code, int item_count);
 
 #endif
