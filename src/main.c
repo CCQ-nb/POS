@@ -9,11 +9,10 @@
 
 int main(){
 
-    int item_count = 0;
     char line[MAX_LINE];
 
     /*加载初始商品*/
-    load_items("data/items.csv", &item_count);
+    load_items("data/items.csv");
 
     /*获取当前date*/
     date = load_max_date(); 
@@ -31,7 +30,7 @@ int main(){
         input(line, sizeof(line));
 
         /*处理输入*/
-        if (handle(line, item_count) == 1 ){
+        if (handle(line) == 1 ){
             break;
         }
         else{

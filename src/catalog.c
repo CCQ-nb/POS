@@ -4,11 +4,13 @@
 #include "catalog.h"
 #include "input.h"
 
+int item_count = 0;
+
 /*初始化物品数组*/
 Item items[MAX_ITEMS];
 
 
-int load_items(const char *filename, int *item_count){
+int load_items(const char *filename){
 
 
     FILE *fp = fopen(filename, "r");
@@ -32,13 +34,13 @@ int load_items(const char *filename, int *item_count){
         if (token == NULL){
             continue;
         }
-        strcpy(items[*item_count].code, token);
+        strcpy(items[item_count].code, token);
 
         token = strtok(NULL, ",");
         if (token == NULL){
             continue;
         }
-        strcpy(items[*item_count].name, token);
+        strcpy(items[item_count].name, token);
 
         token = strtok(NULL, ",");
         if (token == NULL){
@@ -46,16 +48,16 @@ int load_items(const char *filename, int *item_count){
         }
         double price_yuan = atof(token);
         int price_fen = (int)(price_yuan * 100 + 0.5);  /*采用整数分的形式储存价格*/
-        items[*item_count].price = price_fen;
+        items[item_count].price = price_fen;
 
         token = strtok(NULL, ",");
         if (token == NULL){
             continue;
         }
         int current_stock = atoi(token); 
-        items[*item_count].stock = current_stock;
+        items[item_count].stock = current_stock;
 
-        (*item_count) ++;
+        (item_count) ++;
 
     }
 
@@ -64,7 +66,7 @@ int load_items(const char *filename, int *item_count){
 }
 
 /*对比用户输入与商品条码，并返回下标，否则返回-1*/
-int compare_code(const char *line, int item_count){
+int compare_code(const char *line){
     for (int i = 0; i < item_count; i ++){
         if (strcmp(line, items[i].code) == 0){
             return i;

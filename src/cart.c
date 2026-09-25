@@ -45,14 +45,14 @@ int compare_cart_to_item(const int item_sub){
 }
 
 /*加入购物车*/
-int add_cart(char *line, const int item_count){
+int add_cart(char *line){
 
     /*标记数组，记录本次输入改变了哪些商品，方便后续输出(0:没改变；1:改变)*/
     int change[MAX_ITEMS] = {0};
 
     for (char *token = strtok(line, " "); token != NULL; token = strtok(NULL, " ")){
 
-        int item_sub = compare_code(token, item_count);
+        int item_sub = compare_code(token);
 
         /*越界处理：输入了没有的条码*/
         if (item_sub == -1){
@@ -61,7 +61,7 @@ int add_cart(char *line, const int item_count){
         }
 
         /*检测库存是否足够*/
-        if (check_stock(token, item_count) == 0){
+        if (check_stock(token) == 0){
 
             /*检测购物车中是否已经有该物品*/
             int i = compare_cart_to_item(item_sub);
@@ -76,7 +76,7 @@ int add_cart(char *line, const int item_count){
             }
         }
         else {
-            printf("Stockerror: %s", token);
+            printf("Stockerror: %s\n", token);
         }
     }
 
@@ -100,6 +100,14 @@ int delete_cart(const char *item_code){
         if (strcmp(cart_items[i].code, item_code) == 0){
             cart_items[i].quantity --;
             judge ++;
+
+            /*库存增加*/
+            for (int o = 0; 0 < item_count; o ++){
+                if (strcmp(items[o].code, item_code) == 1){
+                    items[o].stock ++;
+                }
+            }
+
             output_product_iofo(0, i, "cart");
 
             /*若商品数量为零，则删除*/
@@ -126,7 +134,7 @@ int drop(void){
 }
 
 /*检查库存是否足够*/
-int check_stock(char *code, int item_count){
+int check_stock(char *code){
 
     for (int i = 0; i < item_count; i ++){
 

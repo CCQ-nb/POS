@@ -186,7 +186,7 @@ int output_product_iofo(int item_sub, int cart_item_sub, const char *type){
 
 
 /*处理用户输入*/
-int handle(char *line, int item_count){
+int handle(char *line){
 
     /*复制一份line*/
     char buffer[MAX_LINE];
@@ -200,7 +200,7 @@ int handle(char *line, int item_count){
         
         /*输入条码*/
         if (strncmp(token, "0", 1) == 0){
-            add_cart(buffer, item_count);
+            add_cart(buffer);
         }
 
         /*输入sales <date>*/
@@ -227,7 +227,7 @@ int handle(char *line, int item_count){
                 } 
             }
 
-            setprice(code, new_price, item_count);
+            setprice(code, new_price);
 
             printf("Price updated.");
         }
@@ -255,9 +255,9 @@ int handle(char *line, int item_count){
                 }
             }
 
-            itemadd(code, name, price, item_count);
+            itemadd(code, name, price);
 
-            printf("%s(%s) added.", name, code);
+            printf("%s(%s) added.\n", name, code);
         }
     
         /*输入itemdel <条码>*/
@@ -272,7 +272,7 @@ int handle(char *line, int item_count){
                     }
                 }
 
-            if (itemdel(code, item_count) == 0){
+            if (itemdel(code) == 0){
                 printf("%s(%s) removed\n", name, code);
             }
             else {
@@ -305,7 +305,7 @@ int handle(char *line, int item_count){
                     }
                 }
             
-            if (restock(code, quantity, item_count) == 0){
+            if (restock(code, quantity) == 0){
                 printf("%s(%s) add quantity %d\n", name, code, quantity);
             }
             else {
@@ -338,7 +338,7 @@ int handle(char *line, int item_count){
                     }
                 }
             
-            if (setstock(code, quantity, item_count) == 0){
+            if (setstock(code, quantity) == 0){
                 printf("%s(%s) set quantity %d\n", name, code, quantity);
             }
             else {
@@ -372,7 +372,7 @@ int handle(char *line, int item_count){
 
         /*输入条码*/
         if (strncmp(line, "0", 1) == 0){
-            add_cart(buffer, item_count);
+            add_cart(buffer);
         }
 
         /*输入-条码*/
@@ -462,8 +462,9 @@ int handle(char *line, int item_count){
         /*输入newday*/
         if (strcmp(line, "newday") == 0){
             date ++;
+            receipt_id = 1;
             printf("Newday start\n");
-            printf("Date: %d", date);
+            printf("Date: %d\n", date);
         }
     
         /*输入admin*/
