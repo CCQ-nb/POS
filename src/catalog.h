@@ -11,8 +11,9 @@ typedef struct{
     int stock;
 } Item;
 
+extern int item_count;
 extern Item items[MAX_ITEMS];
-extern int load_items(const char *filename, int *item_count);
-extern int compare_code(const char *line, int item_count);
+extern int load_items(const char *filename);
+extern int compare_code(const char *line);
 
 #endif
